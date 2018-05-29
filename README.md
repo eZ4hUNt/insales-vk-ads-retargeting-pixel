@@ -57,7 +57,11 @@
 ```
 ## Документация и примеры
 GitHub мануала: https://github.com/eZ4hUNt/insales-vk-ads-retargeting-pixel/
+
 Документация: https://vk.com/ads?act=office_help&id=-19542789_53963210
+
 Пример: https://vkcom.github.io/vk-ads-retargeting-demo/index.html
+
 Проверка работы и создание ID: https://vk.com/ads?act=retargeting
+
 Сайт, на котором установлен пиксель: http://www.mamapapaproduction.ru
