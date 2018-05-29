@@ -1,0 +1,90 @@
+  <script>
+	VK.Retargeting.Hit();
+  </script>
+  {% comment %}
+	.js-buy 													- для кнопки "В корзину"
+	data-product_id="{{ product.id }}" 							- для кнопки "В корзину"
+	
+	.js-cart_item-delete										- для кнопки "Удалить из корзины"
+	data-product_id="{{ item.product.id }}" 					- для кнопки "Удалить из корзины"
+	data-product_id="<%- order_line.product_id %>" 				- для кнопки "Удалить из корзины" (соответственно)
+	
+	.js-cart-submit 											- для кнопки "Оформить заказ"
+  {% endcomment %}
+  {% assign vk_products_list = '' %}
+  {% assign vk_products_arr_list = '' %}
+  {% assign vk_products_arr = '' %}
+  {% if template != 'product' %}
+		{% if template == 'index' %}
+			{% assign coll = collections.frontpage %}
+			{% assign vk_products_event = 'view_home' %}
+		{% elsif template == 'collection' %}
+			{% assign coll = collections.frontpage %}
+			{% assign vk_products_event = 'view_category' %}
+		{% elsif template == 'search' %}
+			{% assign coll = search.results %}
+			{% assign vk_products_event = 'view_search' %}
+		{% elsif template == 'page' %}
+			{% assign coll = collections.frontpage %}
+			{% assign vk_products_event = 'view_other' %}
+		{% endif %}
+	  
+		{% comment %}
+			Выводим результат
+			Список товаров для VK + сопутствующие
+		{% endcomment %}
+			{% for product in coll.products limit:10 %}
+				{% comment %}
+					Список сопутствующих товаров для VK
+				{% endcomment %}
+					{% assign vk_recommended_list = '' %}
+					{% assign coll_recommended = product.related_products %}
+					{% for product_recommended in coll_recommended limit:2 %}
+						{% if vk_recommended_list.size > 0 %}
+							{% assign vk_recommended_product_id = product_recommended.id | prepend: "," %}
+						{% else %}
+							{% assign vk_recommended_product_id = product_recommended.id %}
+						{% endif %}
+						{% assign vk_recommended_list = vk_recommended_list | append: vk_recommended_product_id %}
+					{% endfor %}
+					
+				{% comment %}
+					Собираем в массив
+				{% endcomment %}
+					{% capture vk_products_arr %}{"id":"{{ product.id }}", "recommended_ids": '{{vk_recommended_list}}'}{% endcapture %}
+					{% if vk_products_arr_list.size > 0 %}
+						{% assign vk_products_arr = vk_products_arr | prepend: "," %}
+					{% else %}
+						{% assign vk_products_arr = vk_products_arr %}
+					{% endif %}
+					{% assign vk_products_arr_list = vk_products_arr_list | append: vk_products_arr %}
+			{% endfor %}
+			<script>
+				var eventParams = { 
+					"products" : [{{vk_products_arr_list}}], // Рекомендуемые товары
+					"search_string" : '{{search.query}}', // Поисковый запрос
+				}; 
+				VK.Retargeting.ProductEvent(price_list_id, '{{vk_products_event}}', eventParams);
+			</script>
+  {% elsif template == 'product' %}
+	{% comment %}
+		Товар для VK + сопутствующие
+	{% endcomment %}
+		{% assign coll = product.related_products %}
+		{% for product_recommended in coll limit:2 %}
+			{% if vk_recommended_list.size > 0 %}
+				{% assign vk_recommended_product_id = product_recommended.id | prepend: "," %}
+			{% else %}
+				{% assign vk_recommended_product_id = product_recommended.id %}
+			{% endif %}
+			{% assign vk_recommended_list = vk_recommended_list | append: vk_recommended_product_id %}
+		{% endfor %}
+		
+		<script>
+			var eventParams = { 
+				"products" : [{"id": '{{product.id}}', "recommended_ids": '{{vk_recommended_list}}'}], // Рекомендуемые товары
+			}; 
+			VK.Retargeting.ProductEvent(price_list_id, 'view_product', eventParams);
+		</script>
+  {% endif %}
+  <script type="text/javascript" src="{{ 'vk_retargeting.js' | asset_url }}"></script>
